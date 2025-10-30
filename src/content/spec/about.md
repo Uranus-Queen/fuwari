@@ -1,9 +1,4 @@
-# About
-This is the demo site for [Fuwari](https://github.com/saicaca/fuwari).
-
-::github{repo="saicaca/fuwari"}
-
-> ### Sources of images used in this site
-> - [Unsplash](https://unsplash.com/)
-> - [星と少女](https://www.pixiv.net/artworks/108916539) by [Stella](https://www.pixiv.net/users/93273965)
-> - [Rabbit - v1.4 Showcase](https://civitai.com/posts/586908) by [Rabbit_YourMajesty](https://civitai.com/user/Rabbit_YourMajesty)
+# Abaot
+我还没想好怎么写这个界面，先放着吧。
+附上一张图片占着位置吧。
+![香香的把子肉](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEEKfVpA18lAAGG_JQQ5Aaqy5vudt6aIP8AAhApAAKQeRlUO0C4vYT7BN02BA.jpg '香香的把子肉')
