@@ -1,4 +1,8 @@
 # Abaot
-我还没想好怎么写这个界面，先放着吧。
-附上一张图片占着位置吧。
-![香香的把子肉](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEEKfVpA18lAAGG_JQQ5Aaqy5vudt6aIP8AAhApAAKQeRlUO0C4vYT7BN02BA.jpg '香香的把子肉')
+
+我还没想好怎么写这个界面
+![about_1 ](https://tvax4.sinaimg.cn//008kUQm1gy1i6wsgutiapj32gw1e0hdt.jpg)
+![about_2](https://tvax4.sinaimg.cn//008kUQm1gy1i6wsgy0o7qj36bk4qo4r1.jpg)
+![about_3](https://tvax2.sinaimg.cn//008kUQm1gy1i6wsgyhdltj31400i478v.jpg)
+![about_4](https://tvax1.sinaimg.cn//008kUQm1gy1i6wsgynkgsj31400u0n7s.jpg)
+![about_5](https://tvax1.sinaimg.cn//008kUQm1gy1i6wsgza8jqj335s2dc1kx.jpg)

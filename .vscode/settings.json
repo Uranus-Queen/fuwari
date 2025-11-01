@@ -20,5 +20,7 @@
 	"[markdown]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
-	"markdown.validate.enabled": true
+	"markdown.validate.enabled": true,
+	"files.autoSave": "onFocusChange",
+	"editor.aiStats.enabled": true
 }
