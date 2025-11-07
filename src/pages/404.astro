@@ -1,0 +1,49 @@
+---
+import Layout from "@layouts/Layout.astro";
+import { SITE } from "@config";
+---
+
+<Layout title="页面未找到" description="抱歉，您访问的页面不存在。">
+  <div class="flex flex-col items-center justify-center min-h-[60vh] gap-6 px-4">
+    <div class="text-center max-w-2xl">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4">404 - 页面未找到</h1>
+      <p class="text-lg text-gray-600 dark:text-gray-400 mb-8">
+        抱歉，您访问的页面不存在。可能是以下原因导致：
+      </p>
+      
+      <ul class="text-left text-gray-600 dark:text-gray-400 mb-8 space-y-2 mx-auto max-w-lg">
+        <li class="flex items-start">
+          <span class="text-primary mr-2">•</span>
+          <span>输入的网址有误</span>
+        </li>
+        <li class="flex items-start">
+          <span class="text-primary mr-2">•</span>
+          <span>页面已被删除或移动</span>
+        </li>
+        <li class="flex items-start">
+          <span class="text-primary mr-2">•</span>
+          <span>链接已过期</span>
+        </li>
+      </ul>
+      
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a 
+          href="/" 
+          class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-opacity-90 transition text-center"
+        >
+          返回首页
+        </a>
+        <a 
+          href="/archive/" 
+          class="px-6 py-3 bg-secondary text-white rounded-lg hover:bg-opacity-90 transition text-center"
+        >
+          查看文章归档
+        </a>
+      </div>
+    </div>
+    
+    <div class="mt-12 text-center text-sm text-gray-500 dark:text-gray-400">
+      <p>如果您认为这是一个错误，请联系我们：<a href={`mailto:${SITE.email || 'admin@yoursite.com'}`} class="text-primary hover:underline">admin@yoursite.com</a></p>
+    </div>
+  </div>
+</Layout>

@@ -9,7 +9,7 @@ import { LinkPreset } from "./types/config";
 
 export const siteConfig: SiteConfig = {
 	title: "IKAROS",
-	subtitle: "IKAROS的个人博客",
+	subtitle: "IKAROS的个人博客，记录生活与技术", // 优化subtitle长度，使其符合SEO推荐的长度范围
 	lang: "zh_CN", // Language code, e.g. 'en', 'zh_CN', 'ja', etc.
 	themeColor: {
 		hue: 25, // Default hue for the theme color, from 0 to 360. e.g. red: 0, teal: 200, cyan: 250, pink: 345
@@ -37,6 +37,7 @@ export const siteConfig: SiteConfig = {
 		//   sizes: '32x32',              // (Optional) Size of the favicon, set only if you have favicons of different sizes
 		// }
 	],
+	email: "admin@zhangjun.xyz", // 添加联系邮箱
 };
 
 export const navBarConfig: NavBarConfig = {

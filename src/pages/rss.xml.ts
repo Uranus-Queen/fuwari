@@ -16,13 +16,21 @@ function stripInvalidXmlChars(str: string): string {
 	);
 }
 
+// 限制description长度在160个字符以内，这是SEO推荐的最大长度
+function truncateDescription(description: string, maxLength: number = 160): string {
+	if (description.length <= maxLength) {
+		return description;
+	}
+	return description.substring(0, maxLength - 3) + '...';
+}
+
 export async function GET(context: APIContext) {
 	const blog = await getSortedPosts();
 
 	return rss({
 		title: siteConfig.title,
-		description: siteConfig.subtitle || "No description",
-		site: context.site ?? "https://fuwari.vercel.app",
+		description: truncateDescription(siteConfig.subtitle || "No description"),
+		site: context.site ?? "https://zhangjun.xyz/",
 		items: blog.map((post) => {
 			const content =
 				typeof post.body === "string" ? post.body : String(post.body || "");
@@ -30,13 +38,15 @@ export async function GET(context: APIContext) {
 			return {
 				title: post.data.title,
 				pubDate: post.data.published,
-				description: post.data.description || "",
+				description: truncateDescription(post.data.description || ""),
 				link: url(`/posts/${post.slug}/`),
 				content: sanitizeHtml(parser.render(cleanedContent), {
 					allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img"]),
 				}),
 			};
 		}),
-		customData: `<language>${siteConfig.lang}</language>`,
+		customData: `<language>${siteConfig.lang}</language>
+		<lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+		<docs>https://validator.w3.org/feed/docs/rss2.html</docs>`,
 	});
 }
