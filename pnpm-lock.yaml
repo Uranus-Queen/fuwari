@@ -11,12 +11,6 @@ importers:
       '@astrojs/check':
         specifier: ^0.9.5
         version: 0.9.5(typescript@5.9.3)
-      '@astrojs/rss':
-        specifier: ^4.0.13
-        version: 4.0.13
-      '@astrojs/sitemap':
-        specifier: ^3.6.0
-        version: 3.6.0
       '@astrojs/svelte':
         specifier: 7.2.1
         version: 7.2.1(@types/node@24.5.2)(astro@5.15.3(@types/node@24.5.2)(jiti@1.21.7)(lightningcss@1.29.3)(rollup@2.79.2)(sass@1.80.4)(stylus@0.64.0)(terser@5.43.1)(typescript@5.9.3)(yaml@2.7.0))(jiti@1.21.7)(lightningcss@1.29.3)(sass@1.80.4)(stylus@0.64.0)(svelte@5.39.8)(terser@5.43.1)(typescript@5.9.3)(yaml@2.7.0)
@@ -141,6 +135,12 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
     devDependencies:
+      '@astrojs/rss':
+        specifier: ^4.0.13
+        version: 4.0.13
+      '@astrojs/sitemap':
+        specifier: ^3.6.0
+        version: 3.6.0
       '@astrojs/ts-plugin':
         specifier: ^1.10.5
         version: 1.10.5

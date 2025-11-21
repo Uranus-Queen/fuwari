@@ -26,7 +26,7 @@ import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://zhangjun.xyz/",
+	site: "https://zhangjun.xyz",
 	base: "/",
 	trailingSlash: "always",
 	integrations: [
@@ -101,7 +101,17 @@ export default defineConfig({
 			},
 		}),
 		svelte(),
-		sitemap(),
+		sitemap({
+			filter: (page) => !page.includes('/404'), // 1️⃣ 先过滤垃圾页
+			customPages: ['https://zhangjun.xyz/about'], // 2️⃣ 非 src/pages 的静态页
+			changefreq: 'daily',
+			priority: 0.5, // 3️⃣ 权重 - 设置为单个数字
+			lastmod: new Date(), // 4️⃣ 统一时间戳
+			serialize: async (item) => {
+				// 返回默认的序列化对象，保持默认行为
+				return item;
+			}
+		}),
 	],
 	markdown: {
 		remarkPlugins: [
