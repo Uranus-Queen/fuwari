@@ -1,4 +1,11 @@
 {
+	"css.validate": false,
+	"less.validate": false,
+	"scss.validate": false,
+	"tailwindCSS.includeLanguages": {
+		"astro": "html",
+		"svelte": "html"
+	},
 	"editor.formatOnSave": true,
 	"editor.defaultFormatter": "biomejs.biome",
 	"[javascript]": {
