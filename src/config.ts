@@ -17,7 +17,7 @@ export const siteConfig: SiteConfig = {
 	},
 	banner: {
 		enable: true, // Enable the banner image on the homepage
-		src: "https://free.picui.cn/free/2025/11/05/690adc4a67f52.webp", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+		src: "https://webp.zhangjun.xyz/690adc4a67f52.webp", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
 		position: "center", // Equivalent to object-position, only supports 'top', 'center', 'bottom'. 'center' by default
 		credit: {
 			enable: false, // Display the credit text of the banner image
