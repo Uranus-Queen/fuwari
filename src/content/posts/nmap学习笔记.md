@@ -3,7 +3,8 @@ title: nmap学习笔记
 published: 2025-12-06
 description: ""
 image: ""
-tags: [笔记]
+tags:
+  - "笔记"
 category: "笔记"
 draft: false
 lang: ""
@@ -13,7 +14,7 @@ lang: ""
 
 ## 总览
 
-`nmap` [ *`<Scan Type>`* ...] [ *`<Options>`* ] { _`<target specification>`_ }
+`nmap [<Scan Type> ...] [<Options>] {<target specification>}`
 
 > `[ ... ]` optional
 > `{ ... }` require
