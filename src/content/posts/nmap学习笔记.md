@@ -10,7 +10,7 @@ draft: false
 lang: ""
 ---
 
-# nmap 学习笔记
+## nmap 学习笔记
 
 ## 总览
 
@@ -85,7 +85,7 @@ nmap -sn 192.168.1.0/24          # 局域网 ping 扫描，输出存活列表
 
 ---
 
-2. 批量扫内网热门端口，结果保存成 CSV 给 Excel
+1. 批量扫内网热门端口，结果保存成 CSV 给 Excel
 
 ```bash
 nmap -sS -F -oG - 192.168.1.0/24 | awk '{print $2","$5}' > live_ports.csv
@@ -95,7 +95,7 @@ nmap -sS -F -oG - 192.168.1.0/24 | awk '{print $2","$5}' > live_ports.csv
 
 ---
 
-3. 定位 Web 资产（80、443、8080-8090）并识别服务版本
+1. 定位 Web 资产（80、443、8080-8090）并识别服务版本
 
 ```bash
 nmap -sV -p80,443,8080-8090 -T4 --open 10.0.0.0/8
@@ -105,7 +105,7 @@ nmap -sV -p80,443,8080-8090 -T4 --open 10.0.0.0/8
 
 ---
 
-4. 防火墙绕个小弯：碎片化 + 随机顺序 + 假源地址
+1. 防火墙绕个小弯：碎片化 + 随机顺序 + 假源地址
 
 ```bash
 nmap -sS -f -r -D 1.1.1.1,8.8.8.8,ME -S 4.4.4.4 -e eth0  target.com
@@ -115,7 +115,7 @@ nmap -sS -f -r -D 1.1.1.1,8.8.8.8,ME -S 4.4.4.4 -e eth0  target.com
 
 ---
 
-5. 定向暴力全端口 + OS 检测，结果写三份（normal/XML/HTML）
+1. 定向暴力全端口 + OS 检测，结果写三份（normal/XML/HTML）
 
 ```bash
 nmap -A -p- -T5 --min-rate=1000 --max-rtt-timeout=200ms -oA full_scan  target_ip
@@ -125,7 +125,7 @@ nmap -A -p- -T5 --min-rate=1000 --max-rtt-timeout=200ms -oA full_scan  target_ip
 
 ---
 
-6. 续扫
+1. 续扫
 
 ```bash
 nmap --resume full_scan.nmap   # 只支持 normal/-oN 格式续扫
