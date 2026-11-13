@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Fuwari is a static blog template built on **Astro 6** with **Svelte 5** islands, **Tailwind CSS 3**, and **Stylus**. It deploys to **Vercel** at `https://zhangjun.xyz`. The site language is Chinese (`zh_CN`).
+Fuwari is a static blog template built on **Astro 6** with **Svelte 5** islands, **Tailwind CSS 3**, and **Stylus**. It deploys to **Vercel** at `https://ikaros.page`. The site language is Chinese (`zh_CN`).
 
 ## Commands
 

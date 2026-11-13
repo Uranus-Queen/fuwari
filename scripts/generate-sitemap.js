@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // 站点配置
-const siteUrl = 'https://zhangjun.xyz';
+const siteUrl = 'https://ikaros.page';
 
 // 固定页面
 const fixedPages = [
