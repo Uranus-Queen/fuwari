@@ -1,11 +1,8 @@
 @reference "tailwindcss";
-/* Page transition animations with Swup */
-html.is-changing .transition-swup-fade {
-    @apply transition-all duration-200
-}
-html.is-animating .transition-swup-fade {
-    @apply opacity-0 translate-y-4
-}
+/* Page transitions use Astro's native View Transitions API:
+   - <ClientRouter /> in Layout.astro handles routing, head updates and prefetching
+   - main/#toc in MainGridLayout.astro cross-fade via transition:animate={fade({ duration: '200ms' })}
+   - stable chrome (navbar, sidebar, banner, footer) is kept via transition:persist */
 
 /* Fade-in animations for components */
 @keyframes fade-in-up {
@@ -31,7 +28,7 @@ html.is-animating .transition-swup-fade {
 #sidebar {
     animation-delay: 100ms
 }
-#swup-container {
+#main-container {
     outline: none;
 }
 #content-wrapper {
