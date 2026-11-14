@@ -1,6 +1,5 @@
 import { unified } from "@astrojs/markdown-remark";
 import sitemap from "@astrojs/sitemap";
-import svelte from "@astrojs/svelte";
 import { pluginCollapsibleSections } from "@expressive-code/plugin-collapsible-sections";
 import { pluginLineNumbers } from "@expressive-code/plugin-line-numbers";
 import tailwindcss from "@tailwindcss/vite";
@@ -40,6 +39,8 @@ export default defineConfig({
 			},
 		}),
 		expressiveCode({
+			// inline code-block styles so pages without code never download the 100KB ec stylesheet
+			styleMode: "inlined",
 			themes: [expressiveCodeConfig.theme, expressiveCodeConfig.theme],
 			plugins: [
 				pluginCollapsibleSections(),
@@ -84,10 +85,9 @@ export default defineConfig({
 				showCopyToClipboardButton: false,
 			},
 		}),
-		svelte(),
 		sitemap({
 			filter: (page) => !page.includes('/404'), // 1️⃣ 先过滤垃圾页
-			customPages: ['https://ikaros.page/about'], // 2️⃣ 非 src/pages 的静态页
+			customPages: ['https://ikaros.page/about', 'https://ikaros.page/album'], // 2️⃣ 非 src/pages 的静态页
 			changefreq: 'daily',
 			priority: 0.5, // 3️⃣ 权重 - 设置为单个数字
 			lastmod: new Date(), // 4️⃣ 统一时间戳

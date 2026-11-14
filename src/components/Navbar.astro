@@ -4,9 +4,9 @@ import { navBarConfig, siteConfig } from "../config";
 import { LinkPresets } from "../constants/link-presets";
 import { LinkPreset, type NavBarLink } from "../types/config";
 import { url } from "../utils/url-utils";
-import LightDarkSwitch from "./LightDarkSwitch.svelte";
-import Search from "./Search.svelte";
-import DisplaySettings from "./widget/DisplaySettings.svelte";
+import LightDarkSwitch from "./LightDarkSwitch.astro";
+import Search from "./Search.astro";
+import DisplaySettings from "./widget/DisplaySettings.astro";
 import NavMenuPanel from "./widget/NavMenuPanel.astro";
 
 const className = Astro.props.class;
@@ -45,41 +45,24 @@ let links: NavBarLink[] = navBarConfig.links.map(
         </div>
         <div class="flex">
             <!--<SearchPanel client:load>-->
-            <Search client:only="svelte"></Search>
+            <Search></Search>
             {!siteConfig.themeColor.fixed && (
                     <button aria-label="Display Settings" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
                         <Icon name="material-symbols:palette-outline" class="text-[1.25rem]"></Icon>
                     </button>
             )}
-            <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
+            <LightDarkSwitch></LightDarkSwitch>
             <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:!hidden" id="nav-menu-switch">
                 <Icon name="material-symbols:menu-rounded" class="text-[1.25rem]"></Icon>
             </button>
         </div>
         <NavMenuPanel links={links}></NavMenuPanel>
-        <DisplaySettings client:only="svelte"></DisplaySettings>
+        <DisplaySettings></DisplaySettings>
     </div>
 </div>
 
 <script>
-function switchTheme() {
-    if (localStorage.theme === 'dark') {
-        document.documentElement.classList.remove('dark');
-        localStorage.theme = 'light';
-    } else {
-        document.documentElement.classList.add('dark');
-        localStorage.theme = 'dark';
-    }
-}
-
 function loadButtonScript() {
-    let switchBtn = document.getElementById("scheme-switch");
-    if (switchBtn) {
-        switchBtn.onclick = function () {
-            switchTheme()
-        };
-    }
-
     let settingBtn = document.getElementById("display-settings-switch");
     if (settingBtn) {
         settingBtn.onclick = function () {
@@ -106,6 +89,8 @@ loadButtonScript();
 
 {import.meta.env.PROD && <script is:inline define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>
 async function loadPagefind() {
+    if (window.__pagefindState) return;
+    window.__pagefindState = 'loading';
     try {
         const response = await fetch(scriptUrl, { method: 'HEAD' });
         if (!response.ok) {
@@ -119,23 +104,45 @@ async function loadPagefind() {
         });
 
         window.pagefind = pagefind;
+        window.__pagefindState = 'ready';
 
         document.dispatchEvent(new CustomEvent('pagefindready'));
-        console.log('Pagefind loaded and initialized successfully, event dispatched.');
     } catch (error) {
         console.error('Failed to load Pagefind:', error);
         window.pagefind = {
             search: () => Promise.resolve({ results: [] }),
             options: () => Promise.resolve(),
         };
+        window.__pagefindState = 'error';
         document.dispatchEvent(new CustomEvent('pagefindloaderror'));
-        console.log('Pagefind load error, event dispatched.');
     }
 }
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadPagefind);
-} else {
-    loadPagefind();
+function schedulePagefind() {
+    // Defer to browser idle time so the search index never competes with first-paint resources.
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(loadPagefind, { timeout: 4000 });
+    } else {
+        setTimeout(loadPagefind, 2000);
+    }
+    // But load right away once the user shows intent to search.
+    const onEager = (e) => {
+        const t = e.target;
+        if (t && t.closest && t.closest('#search-bar,#search-switch,#search-panel')) {
+            document.removeEventListener('pointerdown', onEager);
+            document.removeEventListener('focusin', onEager);
+            loadPagefind();
+        }
+    };
+    document.addEventListener('pointerdown', onEager);
+    document.addEventListener('focusin', onEager);
+}
+
+if (!window.__pagefindState) {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', schedulePagefind, { once: true });
+    } else {
+        schedulePagefind();
+    }
 }
 </script>}

@@ -34,6 +34,12 @@ const fixedPages = [
     lastmod: new Date().toISOString(),
     changefreq: 'daily',
     priority: '0.5'
+  },
+  {
+    loc: '/album/',
+    lastmod: new Date().toISOString(),
+    changefreq: 'weekly',
+    priority: '0.5'
   }
 ];
 

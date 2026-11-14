@@ -1,0 +1,5 @@
+# Cloudflare Pages: long-lived caching for content-hashed assets
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+/favicon/*
+  Cache-Control: public, max-age=604800

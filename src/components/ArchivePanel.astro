@@ -1,0 +1,240 @@
+---
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
+import { getPostUrlBySlug } from "../utils/url-utils";
+import type { PostForList } from "../utils/content-utils";
+
+interface Props {
+	sortedPosts: PostForList[];
+}
+
+const { sortedPosts } = Astro.props;
+
+const byYear = new Map<number, PostForList[]>();
+for (const p of sortedPosts) {
+	const y = p.data.published.getFullYear();
+	const arr = byYear.get(y);
+	if (arr) {
+		arr.push(p);
+	} else {
+		byYear.set(y, [p]);
+	}
+}
+const groups = [...byYear.entries()]
+	.sort((a, b) => b[0] - a[0])
+	.map(([year, posts]) => ({ year, posts }));
+
+function formatDate(date: Date) {
+	const month = (date.getMonth() + 1).toString().padStart(2, "0");
+	const day = date.getDate().toString().padStart(2, "0");
+	return `${month}-${day}`;
+}
+
+function formatTag(tagList: string[]) {
+	return tagList.map((t) => `#${t}`).join(" ");
+}
+
+const countTexts = JSON.stringify({
+	one: i18n(I18nKey.postCount),
+	many: i18n(I18nKey.postsCount),
+});
+---
+
+<div class="card-base px-8 py-6" id="archive-panel" data-counts={countTexts}>
+    {groups.map((group) => (
+        <div class="archive-year" data-year={group.year}>
+            <div class="flex flex-row w-full items-center h-[3.75rem]">
+                <div class="w-[15%] md:w-[10%] transition text-2xl font-bold text-right text-75">
+                    {group.year}
+                </div>
+                <div class="w-[15%] md:w-[10%]">
+                    <div class="h-3 w-3 bg-none rounded-full outline outline-[var(--primary)] mx-auto
+                  -outline-offset-[2px] z-50 outline-3"
+                    ></div>
+                </div>
+                <div class="w-[70%] md:w-[80%] transition text-left text-50 archive-count">
+                    {group.posts.length} {i18n(group.posts.length === 1 ? I18nKey.postCount : I18nKey.postsCount)}
+                </div>
+            </div>
+
+            {group.posts.map((post) => (
+                <a
+                    href={getPostUrlBySlug(post.slug)}
+                    aria-label={post.data.title}
+                    class="group btn-plain !block h-10 w-full rounded-lg hover:text-[initial] archive-item"
+                    data-year={post.data.published.getFullYear()}
+                    data-date={formatDate(post.data.published)}
+                    data-title={post.data.title}
+                    data-tags={(post.data.tags ?? []).join(",")}
+                    data-category={post.data.category ?? ""}
+                >
+                    <div class="flex flex-row justify-start items-center h-full">
+                        <!-- date -->
+                        <div class="w-[15%] md:w-[10%] transition text-sm text-right text-50">
+                            {formatDate(post.data.published)}
+                        </div>
+
+                        <!-- dot and line -->
+                        <div class="w-[15%] md:w-[10%] relative dash-line h-full flex items-center">
+                            <div
+                                class="transition-all mx-auto w-1 h-1 rounded group-hover:h-5
+                        bg-[oklch(0.5_0.05_var(--hue))] group-hover:bg-[var(--primary)]
+                        outline outline-4 z-50
+                        outline-[var(--card-bg)]
+                        group-hover:outline-[var(--btn-plain-bg-hover)]
+                        group-active:outline-[var(--btn-plain-bg-active)]"
+                            ></div>
+                        </div>
+
+                        <!-- post title -->
+                        <div
+                            class="w-[70%] md:max-w-[65%] md:w-[65%] text-left font-bold
+                      group-hover:translate-x-1 transition-all group-hover:text-[var(--primary)]
+                      text-75 pr-8 whitespace-nowrap overflow-ellipsis overflow-hidden"
+                        >
+                            {post.data.title}
+                        </div>
+
+                        <!-- tag list -->
+                        <div
+                            class="hidden md:block md:w-[15%] text-left text-sm transition
+                      whitespace-nowrap overflow-ellipsis overflow-hidden text-30"
+                        >
+                            {formatTag(post.data.tags ?? [])}
+                        </div>
+                    </div>
+                </a>
+            ))}
+        </div>
+    ))}
+</div>
+
+<script type="module">
+	function escapeHtml(s) {
+		return s
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;")
+			.replace(/"/g, "&quot;");
+	}
+
+	function applyFilter() {
+		const panel = document.getElementById("archive-panel");
+		if (!panel) return;
+
+		const params = new URLSearchParams(window.location.search);
+		const tags = params.getAll("tag");
+		const categories = params.getAll("category");
+		const uncategorized = params.get("uncategorized");
+		const filtering =
+			tags.length > 0 || categories.length > 0 || !!uncategorized;
+
+		let counts;
+		try {
+			counts = JSON.parse(panel.dataset.counts || "{}");
+		} catch {
+			counts = { one: "post", many: "posts" };
+		}
+
+		const items = [...panel.querySelectorAll(".archive-item")];
+		const kept = items.filter((el) => {
+			if (!filtering) return true;
+			const elTags = (el.dataset.tags || "").split(",").filter(Boolean);
+			const cat = el.dataset.category || "";
+			if (tags.length > 0 && !elTags.some((t) => tags.includes(t)))
+				return false;
+			if (categories.length > 0 && !categories.includes(cat)) return false;
+			if (uncategorized && cat) return false;
+			return true;
+		});
+
+		if (!filtering) {
+			// server-rendered markup is already correct; just undo any previous filtering
+			for (const el of items) el.style.display = "";
+			for (const yearEl of panel.querySelectorAll(
+				".archive-year"
+			)) {
+				yearEl.style.display = "";
+				const count = yearEl.querySelectorAll(".archive-item").length;
+				const countEl = yearEl.querySelector(".archive-count");
+				if (countEl)
+					countEl.textContent = `${count} ${count === 1 ? counts.one : counts.many}`;
+				// rebuild rows in original DOM order (they were never removed)
+			}
+			// remove any client-rendered nodes from a previous filtered state
+			for (const el of panel.querySelectorAll("[data-client-rendered]"))
+				el.remove();
+			return;
+		}
+
+		// clear server rows, re-render filtered list grouped by year
+		for (const yearEl of panel.querySelectorAll(".archive-year"))
+			yearEl.style.display = "none";
+
+		const existing = panel.querySelector(".archive-client");
+		if (existing) existing.remove();
+
+		const byYear = new Map();
+		for (const el of kept) {
+			const y = el.dataset.year || "";
+			const arr = byYear.get(y);
+			if (arr) arr.push(el);
+			else byYear.set(y, [el]);
+		}
+
+		const client = document.createElement("div");
+		client.className = "archive-client";
+		client.setAttribute("data-client-rendered", "1");
+
+		const years = [...byYear.keys()].sort((a, b) => b.localeCompare(a));
+		for (const year of years) {
+			const list = byYear.get(year);
+			const wrap = document.createElement("div");
+			wrap.innerHTML = `
+				<div class="flex flex-row w-full items-center h-[3.75rem]">
+					<div class="w-[15%] md:w-[10%] transition text-2xl font-bold text-right text-75">${escapeHtml(year)}</div>
+					<div class="w-[15%] md:w-[10%]">
+						<div class="h-3 w-3 bg-none rounded-full outline outline-[var(--primary)] mx-auto -outline-offset-[2px] z-50 outline-3"></div>
+					</div>
+					<div class="w-[70%] md:w-[80%] transition text-left text-50">${list.length} ${list.length === 1 ? counts.one : counts.many}</div>
+				</div>`;
+			for (const el of list) {
+				const row = document.createElement("a");
+				row.href = el.getAttribute("href") || "/";
+				row.setAttribute(
+					"class",
+					"group btn-plain !block h-10 w-full rounded-lg hover:text-[initial]",
+				);
+				row.innerHTML = `
+					<div class="flex flex-row justify-start items-center h-full">
+						<div class="w-[15%] md:w-[10%] transition text-sm text-right text-50">${escapeHtml(el.dataset.date || "")}</div>
+						<div class="w-[15%] md:w-[10%] relative dash-line h-full flex items-center">
+							<div class="transition-all mx-auto w-1 h-1 rounded group-hover:h-5 bg-[oklch(0.5_0.05_var(--hue))] group-hover:bg-[var(--primary)] outline outline-4 z-50 outline-[var(--card-bg)] group-hover:outline-[var(--btn-plain-bg-hover)] group-active:outline-[var(--btn-plain-bg-active)]"></div>
+						</div>
+						<div class="w-[70%] md:max-w-[65%] md:w-[65%] text-left font-bold group-hover:translate-x-1 transition-all group-hover:text-[var(--primary)] text-75 pr-8 whitespace-nowrap overflow-ellipsis overflow-hidden">${escapeHtml(el.dataset.title || "")}</div>
+						<div class="hidden md:block md:w-[15%] text-left text-sm transition whitespace-nowrap overflow-ellipsis overflow-hidden text-30">${escapeHtml(formatTagsDisplay(el.dataset.tags))}</div>
+					</div>`;
+				wrap.appendChild(row);
+			}
+			client.appendChild(wrap);
+		}
+		if (years.length === 0) {
+			const div = document.createElement("div");
+			div.className = "text-50 py-4 text-center";
+			div.textContent = "0";
+			client.appendChild(div);
+		}
+		panel.appendChild(client);
+	}
+
+	function formatTagsDisplay(csv) {
+		return (csv || "")
+			.split(",")
+			.filter(Boolean)
+			.map((t) => `#${t}`)
+			.join(" ");
+	}
+
+	applyFilter();
+	document.addEventListener("astro:page-load", applyFilter);
+</script>

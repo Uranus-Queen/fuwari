@@ -1,0 +1,73 @@
+/* Image loading animation: the wrapper (.img-reveal) reserves the exact
+ * box (via img width/height attributes) and shows a shimmer while the
+ * image downloads; the image itself fades in once decoded. */
+
+.img-reveal {
+	position: relative;
+	display: block;
+	max-width: 100%;
+	overflow: hidden;
+}
+
+.img-reveal::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		100deg,
+		var(--card-bg) 35%,
+		var(--btn-plain-bg-hover) 50%,
+		var(--card-bg) 65%
+	);
+	background-size: 300% 100%;
+	transition: opacity 0.4s ease;
+	will-change: background-position;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.img-reveal::before {
+		animation: img-shimmer 1.6s linear infinite;
+	}
+}
+
+@keyframes img-shimmer {
+	from {
+		background-position: 150% 0;
+	}
+	to {
+		background-position: -150% 0;
+	}
+}
+
+.img-reveal img[data-reveal] {
+	position: relative;
+	display: block;
+	max-width: 100%;
+	height: auto;
+	opacity: 0;
+	transition: opacity 0.5s ease;
+}
+
+.img-reveal img[data-reveal].is-loaded {
+	opacity: 1;
+}
+
+/* fade without a wrapper (fallback for inline images) */
+img[data-reveal]:not(.img-reveal img) {
+	opacity: 0;
+	transition: opacity 0.5s ease;
+}
+
+img[data-reveal]:not(.img-reveal img).is-loaded {
+	opacity: 1;
+}
+
+.img-reveal:has(img.is-loaded)::before {
+	opacity: 0;
+}
+
+/* keep markdown look for wrapped images */
+.custom-md .img-reveal {
+	border-radius: 0.75rem;
+	margin: 0.25rem 0;
+}

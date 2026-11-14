@@ -1,0 +1,130 @@
+---
+import { AUTO_MODE, DARK_MODE, LIGHT_MODE } from "@constants/constants.ts";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import { Icon } from "astro-icon/components";
+---
+
+<!-- z-50 make the panel higher than other float panels -->
+<div class="relative z-50" role="menu" tabindex="-1" data-scheme-wrap>
+    <button aria-label="Light/Dark Mode" role="menuitem" class="relative btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="scheme-switch">
+        <div class="absolute" data-mode={LIGHT_MODE}>
+            <Icon name="material-symbols:wb-sunny-outline-rounded" class="text-[1.25rem]" />
+        </div>
+        <div class="absolute" data-mode={DARK_MODE}>
+            <Icon name="material-symbols:dark-mode-outline-rounded" class="text-[1.25rem]" />
+        </div>
+        <div class="absolute" data-mode={AUTO_MODE}>
+            <Icon name="material-symbols:radio-button-partial-outline" class="text-[1.25rem]" />
+        </div>
+    </button>
+
+    <div id="light-dark-panel" class="hidden lg:block absolute transition float-panel-closed top-11 -right-2 pt-5">
+        <div class="card-base float-panel p-2">
+            <button class="flex transition whitespace-nowrap items-center !justify-start w-full btn-plain scale-animation rounded-lg h-9 px-3 font-medium active:scale-95 mb-0.5"
+                    data-theme-option={LIGHT_MODE}>
+                <Icon name="material-symbols:wb-sunny-outline-rounded" class="text-[1.25rem] mr-3" />
+                {i18n(I18nKey.lightMode)}
+            </button>
+            <button class="flex transition whitespace-nowrap items-center !justify-start w-full btn-plain scale-animation rounded-lg h-9 px-3 font-medium active:scale-95 mb-0.5"
+                    data-theme-option={DARK_MODE}>
+                <Icon name="material-symbols:dark-mode-outline-rounded" class="text-[1.25rem] mr-3" />
+                {i18n(I18nKey.darkMode)}
+            </button>
+            <button class="flex transition whitespace-nowrap items-center !justify-start w-full btn-plain scale-animation rounded-lg h-9 px-3 font-medium active:scale-95"
+                    data-theme-option={AUTO_MODE}>
+                <Icon name="material-symbols:radio-button-partial-outline" class="text-[1.25rem] mr-3" />
+                {i18n(I18nKey.systemMode)}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- pre-paint sync: no flicker regardless of the stored theme -->
+<script is:inline>
+	(() => {
+		const m = localStorage.getItem("theme") || "auto";
+		for (const el of document.querySelectorAll("#scheme-switch [data-mode]")) {
+			el.classList.toggle("opacity-0", el.dataset.mode !== m);
+		}
+		for (const el of document.querySelectorAll("#light-dark-panel [data-theme-option]")) {
+			el.classList.toggle("current-theme-btn", el.dataset.themeOption === m);
+		}
+	})();
+</script>
+
+<script>
+	import { AUTO_MODE, DARK_MODE, LIGHT_MODE } from "@constants/constants.ts";
+	import {
+		applyThemeToDocument,
+		getStoredTheme,
+		setTheme,
+	} from "@utils/setting-utils.ts";
+
+	const seq = [LIGHT_MODE, DARK_MODE, AUTO_MODE];
+
+	function syncUI() {
+		const mode = getStoredTheme();
+		for (const el of document.querySelectorAll("#scheme-switch [data-mode]")) {
+			el.classList.toggle("opacity-0", (el as HTMLElement).dataset.mode !== mode);
+		}
+		for (const el of document.querySelectorAll("#light-dark-panel [data-theme-option]")) {
+			el.classList.toggle(
+				"current-theme-btn",
+				(el as HTMLElement).dataset.themeOption === mode,
+			);
+		}
+	}
+
+	function switchScheme(newMode: string) {
+		setTheme(newMode as any);
+		syncUI();
+	}
+
+	function toggleScheme() {
+		const i = seq.indexOf(getStoredTheme() as any);
+		switchScheme(seq[(i + 1) % seq.length] as any);
+	}
+
+	function showPanel() {
+		document.querySelector("#light-dark-panel")?.classList.remove("float-panel-closed");
+	}
+
+	function hidePanel() {
+		document.querySelector("#light-dark-panel")?.classList.add("float-panel-closed");
+	}
+
+	function bind() {
+		const btn = document.getElementById("scheme-switch");
+		if (btn && !btn.dataset.bound) {
+			btn.dataset.bound = "1";
+			btn.addEventListener("click", toggleScheme);
+		}
+		for (const el of document.querySelectorAll(
+			"#light-dark-panel [data-theme-option]",
+		)) {
+			const opt = el as HTMLElement;
+			if (!opt.dataset.bound) {
+				opt.dataset.bound = "1";
+				opt.addEventListener("click", () => switchScheme(opt.dataset.themeOption!));
+			}
+		}
+		const wrap = document.querySelector("[data-scheme-wrap]") as HTMLElement | null;
+		if (wrap && !wrap.dataset.bound) {
+			wrap.dataset.bound = "1";
+			wrap.addEventListener("mouseenter", showPanel);
+			wrap.addEventListener("mouseleave", hidePanel);
+		}
+		syncUI();
+	}
+
+	bind();
+	document.addEventListener("astro:page-load", bind);
+
+	if (!(window as any).__schemeMqBound) {
+		(window as any).__schemeMqBound = true;
+		window
+			.matchMedia("(prefers-color-scheme: dark)")
+			.addEventListener("change", () => applyThemeToDocument(getStoredTheme()));
+	}
+</script>

@@ -1,0 +1,216 @@
+---
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import { url } from "@utils/url-utils";
+import { Icon } from "astro-icon/components";
+
+const searchPlaceholder = i18n(I18nKey.search);
+---
+
+<!-- search bar for desktop view -->
+<div id="search-bar" class="hidden lg:flex transition-all items-center h-11 mr-2 rounded-lg
+      bg-black/[0.04] hover:bg-black/[0.06] focus-within:bg-black/[0.06]
+      dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10
+">
+    <Icon name="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30" />
+    <input placeholder={searchPlaceholder} id="search-input-desktop"
+           class="transition-all pl-10 text-sm bg-transparent outline-0
+         h-full w-40 active:w-60 focus:w-60 text-black/50 dark:text-white/50"
+    />
+</div>
+
+<!-- toggle btn for phone/tablet view -->
+<button aria-label="Search Panel" id="search-switch"
+        class="btn-plain scale-animation lg:!hidden rounded-lg w-11 h-11 active:scale-90">
+    <Icon name="material-symbols:search" class="text-[1.25rem]" />
+</button>
+
+<!-- search panel -->
+<div id="search-panel" class="float-panel float-panel-closed search-panel absolute md:w-[30rem]
+top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
+
+    <!-- search bar inside panel for phone/tablet view -->
+    <div id="search-bar-inside" class="flex relative lg:hidden transition-all items-center h-11 rounded-xl
+      bg-black/[0.04] hover:bg-black/[0.06] focus-within:bg-black/[0.06]
+  ">
+        <Icon name="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30" />
+        <input aria-label="Search" id="search-input-mobile"
+               class="pl-10 absolute inset-0 text-sm bg-transparent outline-0
+               focus:w-60 text-black/50 dark:text-white/50"
+        />
+    </div>
+
+    <!-- search results -->
+    <div id="search-results"></div>
+
+    <template id="search-result-tpl">
+        <a class="transition first-of-type:mt-2 lg:first-of-type:mt-0 group block
+       rounded-xl text-lg px-3 py-2 hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)]">
+            <div class="transition text-90 inline-flex font-bold group-hover:text-[var(--primary)]">
+                <span data-title></span><Icon name="fa6-solid:chevron-right" class="transition text-[0.75rem] translate-x-1 my-auto text-[var(--primary)]" />
+            </div>
+            <div class="transition text-sm text-50" data-excerpt></div>
+        </a>
+    </template>
+</div>
+
+<script>
+	import { url as baseUrl } from "@utils/url-utils";
+
+	const devFakeResults = [
+		{
+			url: baseUrl("/"),
+			title: "This Is a Fake Search Result",
+			excerpt:
+				"Because the search cannot work in the <mark>dev</mark> environment.",
+		},
+		{
+			url: baseUrl("/"),
+			title: "If You Want to Test the Search",
+			excerpt: "Try running <mark>npm build && npm preview</mark> instead.",
+		},
+	];
+
+	let searchTimer: ReturnType<typeof setTimeout> | undefined;
+
+	function escapeHtml(s: string): string {
+		return s
+			.replaceAll("&", "&amp;")
+			.replaceAll("<", "&lt;")
+			.replaceAll(">", "&gt;")
+			.replaceAll('"', "&quot;");
+	}
+
+	function setPanelVisibility(show: boolean): void {
+		document
+			.getElementById("search-panel")
+			?.classList.toggle("float-panel-closed", !show);
+	}
+
+	function renderResults(
+		items: { url: string; title: string; excerpt?: string }[],
+	): void {
+		const container = document.getElementById("search-results");
+		const tpl = document.getElementById("search-result-tpl") as HTMLTemplateElement | null;
+		if (!container || !tpl) return;
+		container.innerHTML = "";
+		for (const item of items) {
+			const node = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+			node.setAttribute("href", item.url);
+			node.setAttribute("aria-label", item.title);
+			const titleEl = node.querySelector("[data-title]");
+			if (titleEl) titleEl.textContent = item.title;
+			const excerptEl = node.querySelector("[data-excerpt]");
+			if (excerptEl)
+				excerptEl.innerHTML = item.excerpt
+					? item.excerpt
+					: escapeHtml("");
+			container.appendChild(node);
+		}
+	}
+
+	function ensurePagefind(): Promise<any | undefined> {
+		if ((window as any).pagefind?.search)
+			return Promise.resolve((window as any).pagefind);
+		return new Promise((resolve) => {
+			const done = (fn: () => void) => fn();
+			let settled = false;
+			const finish = () => {
+				if (settled) return;
+				settled = true;
+				resolve((window as any).pagefind);
+			};
+			document.addEventListener("pagefindready", () => done(finish), { once: true });
+			document.addEventListener("pagefindloaderror", () => done(finish), {
+				once: true,
+			});
+			setTimeout(finish, 5000);
+		});
+	}
+
+	async function doSearch(keyword: string, isDesktop: boolean): Promise<void> {
+		if (!keyword) {
+			if (isDesktop) setPanelVisibility(false);
+			renderResults([]);
+			return;
+		}
+		if (import.meta.env.DEV) {
+			renderResults(devFakeResults);
+			setPanelVisibility(true);
+			return;
+		}
+		const pf = await ensurePagefind();
+		if (!pf?.search) {
+			renderResults([]);
+			return;
+		}
+		const response = await pf.search(keyword);
+		const results = await Promise.all(
+			response.results.map((item: any) => item.data()),
+		);
+		const mapped = results.map((r: any) => ({
+			url: r.url,
+			title: r.meta?.title ?? r.h1 ?? r.url,
+			excerpt: r.excerpt,
+		}));
+		renderResults(mapped);
+		if (isDesktop) setPanelVisibility(mapped.length > 0);
+	}
+
+	function bind(): void {
+		const desktop = document.getElementById("search-input-desktop");
+		if (desktop && !desktop.dataset.bound) {
+			desktop.dataset.bound = "1";
+			desktop.addEventListener("input", () => {
+				clearTimeout(searchTimer);
+				const kw = (desktop as HTMLInputElement).value;
+				searchTimer = setTimeout(() => doSearch(kw, true), 150);
+			});
+			desktop.addEventListener(
+				"focus",
+				() => void doSearch((desktop as HTMLInputElement).value, true),
+			);
+		}
+		const mobile = document.getElementById("search-input-mobile");
+		if (mobile && !mobile.dataset.bound) {
+			mobile.dataset.bound = "1";
+			mobile.addEventListener("input", () => {
+				clearTimeout(searchTimer);
+				const kw = (mobile as HTMLInputElement).value;
+				searchTimer = setTimeout(() => doSearch(kw, false), 150);
+			});
+		}
+		const toggle = document.getElementById("search-switch");
+		if (toggle && !toggle.dataset.bound) {
+			toggle.dataset.bound = "1";
+			toggle.addEventListener("click", () =>
+				document
+					.getElementById("search-panel")
+					?.classList.toggle("float-panel-closed"),
+			);
+		}
+	}
+
+	function resetUI(): void {
+		for (const id of ["search-input-desktop", "search-input-mobile"]) {
+			const el = document.getElementById(id) as HTMLInputElement | null;
+			if (el) el.value = "";
+		}
+		renderResults([]);
+		setPanelVisibility(false);
+	}
+
+	bind();
+	document.addEventListener("astro:page-load", bind);
+	document.addEventListener("astro:after-swap", resetUI);
+</script>
+
+<style>
+	input:focus {
+		outline: 0;
+	}
+	.search-panel {
+		max-height: calc(100vh - 100px);
+		overflow-y: auto;
+	}
+</style>

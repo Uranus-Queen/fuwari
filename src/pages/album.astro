@@ -1,0 +1,50 @@
+---
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
+import { dimensionFor } from "../plugins/image-dimensions.mjs";
+
+// 相册：图片通过 PicGo 上传到 image.ikaros.page 后，把地址和说明加进这个数组即可。
+const photos: { src: string; caption: string }[] = [
+	{ src: "https://image.ikaros.page/6905c809bd354.webp", caption: "牛首山拍的" },
+	{ src: "https://image.ikaros.page/6905c80a8c109.webp", caption: "浦口码头的船" },
+	{ src: "https://image.ikaros.page/6905c809307d9.webp", caption: "还是浦口码头拍的" },
+	{ src: "https://image.ikaros.page/6905c8096e1ca.webp", caption: "华山" },
+	{ src: "https://image.ikaros.page/6905c8093ff7e.webp", caption: "老家的云" },
+	{ src: "https://image.ikaros.page/690ad5e1eca75.webp", caption: "敷衍的参观" },
+	{ src: "https://image.ikaros.page/6909b8c6df551.webp", caption: "敷衍的参观" },
+	{ src: "https://image.ikaros.page/6909b8c706201.webp", caption: "敷衍的参观" },
+	{ src: "https://image.ikaros.page/6909b8c8131f8.webp", caption: "敷衍的参观" },
+	{ src: "https://image.ikaros.page/6919e17544d84.webp", caption: "一次愉快的团建" },
+	{ src: "https://image.ikaros.page/6919e16417e47.webp", caption: "一次愉快的团建" },
+	{ src: "https://image.ikaros.page/6919e329e12b3.webp", caption: "一次愉快的团建" },
+	{ src: "https://image.ikaros.page/690ad4317feb6.webp", caption: "随手拍" },
+	{ src: "https://image.ikaros.page/6905dbc6d37b9.jpg", caption: "随手拍" },
+];
+---
+
+<MainGridLayout title={i18n(I18nKey.album)} description={i18n(I18nKey.album)}>
+    <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+        <div class="card-base z-10 px-9 py-6 relative w-full">
+            <div class="text-2xl font-bold mb-5 text-center text-90">
+                {i18n(I18nKey.album)}
+            </div>
+            <div class="album-grid gap-4 columns-2 md:columns-3">
+                {photos.map((p) => {
+                    const dim = dimensionFor(p.src);
+                    return (
+                    <figure class="img-reveal mb-4 break-inside-avoid relative rounded-2xl overflow-hidden group cursor-zoom-in">
+                        <img src={p.src} alt={p.caption} loading="lazy" decoding="async" data-reveal=""
+                             width={dim ? dim.w : undefined} height={dim ? dim.h : undefined}
+                             class="w-full h-auto transition-transform duration-500 group-hover:scale-[1.04]" />
+                        <figcaption class="absolute inset-x-0 bottom-0 px-3 py-2 text-sm text-white/90
+                            bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition">
+                            {p.caption}
+                        </figcaption>
+                    </figure>
+                    );
+                })}
+            </div>
+        </div>
+    </div>
+</MainGridLayout>
